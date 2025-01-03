@@ -39,3 +39,49 @@ func TestTemplateRandData(t *testing.T) {
 		}
 	}
 }
+
+func TestDeterministicRandData(t *testing.T) {
+	tests := []struct {
+		seed   string
+		length int
+		want   string
+	}{
+		{
+			seed:   "deployment-1",
+			length: 1,
+			want:   "y",
+		},
+		{
+			seed:   "deployment-2",
+			length: 1,
+			want:   "H",
+		},
+		{
+			seed:   "deployment-1",
+			length: 100,
+			want:   "y1f12IwpVhg4yxEpWsLGv9kPpJiegnVbxtkCUYYUfGZowLSPCwdPLc7p286exVl9M0RAR5i9DQsXDcbjQ3xzWjqf4jnWhFsP4fzg",
+		},
+		{
+			seed:   "deployment-2",
+			length: 100,
+			want:   "H7Y8bVPxHn8LR1fvu9GeOLkheUbQsIx9EJkDp7SXQWKrOU2hPJ5RSvdKG8Ttzq8LeLdtYqZCYjSNegr1d339aGwOsFGtEbYUGWEG",
+		},
+		{
+			seed:   "deployment-1",
+			length: 10,
+			want:   "y1f12IwpVh",
+		},
+		{
+			seed:   "deployment-2",
+			length: 10,
+			want:   "H7Y8bVPxHn",
+		},
+	}
+
+	for _, tt := range tests {
+		data := deterministicRandData(tt.seed, tt.length)
+		if data != tt.want {
+			t.Errorf("wanted: %q, got: %q", tt.want, data)
+		}
+	}
+}

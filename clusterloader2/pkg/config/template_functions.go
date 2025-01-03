@@ -17,6 +17,9 @@ limitations under the License.
 package config
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -29,7 +32,6 @@ import (
 	"time"
 
 	template "github.com/google/safetext/yamltemplate"
-
 	"gopkg.in/yaml.v2"
 	"k8s.io/klog/v2"
 )
@@ -69,6 +71,8 @@ func GetFuncs(fsys fs.FS) template.FuncMap {
 		"SubtractInt":      subtractInt,
 		"YamlQuote":        yamlQuote,
 		"Concat":           concat,
+
+		"DeterministicRandData": deterministicRandData,
 	}
 }
 
@@ -114,6 +118,26 @@ func randData(i interface{}) string {
 	for i := range b {
 		b[i] = alphabet[rand.Intn(len(alphabet))]
 	}
+	return string(b)
+}
+
+// randData returns pseudo-random string of i length.
+func deterministicRandData(seed, size interface{}) string {
+	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	hashBytes := sha256.Sum256([]byte(seed.(string)))
+	buf := bytes.NewBuffer(hashBytes[:])
+	var intSeed int64
+	err := binary.Read(buf, binary.LittleEndian, &intSeed)
+	if err != nil {
+		panic(err)
+	}
+	rand.Seed(intSeed)
+	typedI := int(toFloat64(size))
+	b := make([]byte, typedI)
+	for i := range b {
+		b[i] = alphabet[rand.Intn(len(alphabet))]
+	}
+	rand.Seed(time.Now().UnixNano())
 	return string(b)
 }
 
