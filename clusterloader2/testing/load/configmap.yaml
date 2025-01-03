@@ -16,3 +16,4 @@ data:
       kubernetes.default
       metadata.google.internal
       google.com
+  key: "{{RandData 100}}"
