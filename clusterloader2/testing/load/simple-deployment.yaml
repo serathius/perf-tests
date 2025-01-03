@@ -32,6 +32,8 @@ spec:
       - env:
         - name: ENV_VAR
           value: {{$EnvVar}}
+        - name: key
+          value: "{{RandData 10000}}"
         image: {{$Image}}
         imagePullPolicy: IfNotPresent
         name: {{.Name}}
