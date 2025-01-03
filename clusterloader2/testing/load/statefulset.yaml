@@ -27,6 +27,9 @@ spec:
       containers:
       - name: {{.Name}}
         image: {{$Image}}
+        env:
+        - name: key
+          value: "{{DeterministicRandData .Name 5000}}"
         ports:
           - containerPort: 80
             name: web
