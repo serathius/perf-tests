@@ -67,15 +67,24 @@ spec:
           "Using nameserver ${server}";
           ./dnsperfgo -duration 60s -idle-duration 10s -inputfile /var/configmap/all-queries -qps {{$dnsQPSPerClient}};
         name: {{.Name}}-dnsperf
-{{else}}
+        env:
+        - name: key
+          value: "{{DeterministicRandData .Name 2000}}"
+  {{else}}
   {{if $RunNetPolicyTest}}
       - image: nginx
         name: nginx-server
+        env:
+        - name: key
+          value: "{{DeterministicRandData .Name 2000}}"
         ports:
         - containerPort: 80
   {{else}}
       - image: {{$Image}}
         name: {{.Name}}
+        env:
+        - name: key
+          value: "{{DeterministicRandData .Name 2000}}"
   {{end}}
 {{end}}
         resources:
