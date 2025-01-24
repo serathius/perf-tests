@@ -47,7 +47,7 @@ import (
 const (
 	namespace                    = "monitoring"
 	storageClass                 = "ssd"
-	checkPrometheusReadyInterval = 30 * time.Second
+	checkPrometheusReadyInterval = 10 * time.Second
 	numK8sClients                = 1
 
 	// All paths here are relative to manifests dir.
