@@ -5,9 +5,33 @@ nodes:
   kubeadmConfigPatches:
   - |
     kind: ClusterConfiguration
+    apiServer:
+      extraArgs:
+        max-requests-inflight: "640"
+        max-mutating-requests-inflight: "0"
     controllerManager:
       extraArgs:
         bind-address: "0.0.0.0"
+        authorization-always-allow-paths: "/healthz,/readyz,/livez,/metrics"
+        kube-api-qps: "100"
+        kube-api-burst: "100"
+        profiling: "true"
     scheduler:
       extraArgs:
         bind-address: "0.0.0.0"
+        authorization-always-allow-paths: "/healthz,/readyz,/livez,/metrics"
+        kube-api-qps: "500"
+        kube-api-burst: "500"
+        profiling: "true"
+
+
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker
+- role: worker

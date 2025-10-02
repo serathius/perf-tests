@@ -99,26 +99,6 @@ steps:
       checkProbesReadyTimeout: {{$PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT}}
       replicasPerProbe: {{AddInt 2 (DivideInt .Nodes 100)}}
 {{end}}
-{{if $PROMETHEUS_SCRAPE_KUBE_PROXY}}
-  - Identifier: NetworkProgrammingLatency
-    Method: NetworkProgrammingLatency
-    Params:
-      action: {{$action}}
-      enableViolations: {{$ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES}}
-      threshold: {{$NETWORK_PROGRAMMING_LATENCY_THRESHOLD}}
-  - Identifier: Kube-proxy partial iptables restore failures
-    Method: GenericPrometheusQuery
-    Params:
-      action: {{$action}}
-      metricName: KubeProxyIptablesRestoreFailures
-      metricVersion: v1alpha1
-      unit: failures
-      queries:
-      - name: Total
-        query: sum(kubeproxy_sync_proxy_rules_iptables_partial_restore_failures_total)
-        requireSamples: false # It is a feature gate and may not be enabled
-        threshold: 0
-{{end}}
 {{if $PROMETHEUS_SCRAPE_KUBE_STATE_METRICS}}
   - Identifier: KubeStateMetricsLatency
     Method: KubeStateMetricsLatency

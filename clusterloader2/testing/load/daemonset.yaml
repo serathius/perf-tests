@@ -1,11 +1,11 @@
 {{$HostNetworkMode := DefaultParam .CL2_USE_HOST_NETWORK_PODS false}}
 {{$Image := DefaultParam .Image "registry.k8s.io/pause:3.9"}}
-{{$Env := DefaultParam .Env ""}}
 {{$DaemonSetSurge := DefaultParam .CL2_DS_SURGE (MaxInt 10 (DivideInt .Nodes 20))}} # 5% of nodes, but not less than 10
 {{$RUN_ON_ARM_NODES := DefaultParam .CL2_RUN_ON_ARM_NODES false}}
 
 {{$ENABLE_NETWORK_POLICY_ENFORCEMENT_LATENCY_TEST := DefaultParam .CL2_ENABLE_NETWORK_POLICY_ENFORCEMENT_LATENCY_TEST false}}
 {{$NET_POLICY_ENFORCEMENT_LATENCY_NODE_LABEL_VALUE := DefaultParam .CL2_NET_POLICY_ENFORCEMENT_LATENCY_NODE_LABEL_VALUE "net-policy-client"}}
+{{$podPayloadSize := DefaultParam .CL2_DAEMONSET_POD_PAYLOAD_SIZE 1024}}
 
 apiVersion: apps/v1
 kind: DaemonSet
@@ -31,8 +31,8 @@ spec:
       - name: {{.Name}}
         image: {{$Image}}
         env:
-          - name: TEST_ENV
-            value: {{$Env}}
+        - name: ENV_VAR
+          value: {{RandData $podPayloadSize}}
         resources:
           # Keep the CpuRequest/MemoryRequest request equal percentage of 1-core, 4GB node.
           # For now we're setting it to 0.5%.
