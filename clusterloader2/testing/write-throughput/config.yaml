@@ -1,7 +1,7 @@
 # Write throughput with background watch benchmark
 {{$podCount := DefaultParam .CL2_PODS_BENCHMARK_POD_COUNT 10000}}
 {{$watchReplicas := DefaultParam .CL2_PODS_WATCH_REPLICAS 10}}
-{{$writeReplicas := DefaultParam .CL2_PODS_WRITE_REPLICAS 10}}
+{{$writeReplicas := DefaultParam .CL2_PODS_WRITE_REPLICAS 30}}
 {{$patchQps := DefaultParam .CL2_PODS_PATCH_QPS 100}}
 {{$duration := DefaultParam .CL2_PODS_BENCHMARK_DURATION "15m"}}
 
@@ -58,26 +58,3 @@ steps:
     path: /modules/measurements.yaml
     params:
       action: gather
-
-- name: Teardown PATCH writer workload & RBAC
-  module:
-    path: modules/writer/config.yaml
-    params:
-      action: delete
-      namePrefix: "write-patch-"
-      replicas: 0
-
-- name: Teardown background watch workload & RBAC
-  module:
-    path: modules/watch/config.yaml
-    params:
-      action: delete
-      namePrefix: "watch-workload-"
-      replicas: 0
-
-- name: Delete initial baseline realistic target pods
-  module:
-    path: modules/initial-pods/config.yaml
-    params:
-      action: delete
-      podCount: {{$podCount}}

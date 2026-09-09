@@ -1,6 +1,6 @@
 {{$image := DefaultParam .CL2_BENCHMARK_IMAGE "gcr.io/k8s-staging-perf-tests/perf-tests-util/request-benchmark:v0.0.18"}}
 {{$imagePullPolicy := DefaultParam .CL2_IMAGE_PULL_POLICY "IfNotPresent"}}
-{{$cpu := DefaultParam .cpu "200m"}}
+{{$cpu := DefaultParam .cpu "500m"}}
 {{$memory := DefaultParam .memory "100Mi"}}
 
 apiVersion: apps/v1

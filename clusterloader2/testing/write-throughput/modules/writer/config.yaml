@@ -2,9 +2,9 @@
 # Valid actions: "create", "delete"
 {{$action := DefaultParam .action "create"}}
 {{$namePrefix := DefaultParam .namePrefix "write-workload-"}}
-{{$replicas := DefaultParam .replicas 1}}
+{{$replicas := DefaultParam .replicas 30}}
 {{$podCount := DefaultParam .podCount 1000}}
-{{$qps := DefaultParam .qps 50}}
+{{$qps := DefaultParam .qps 100}}
 
 {{$targetNamespace := DefaultParam .targetNamespace "default"}}
 
