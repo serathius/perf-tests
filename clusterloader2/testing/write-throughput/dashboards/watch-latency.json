@@ -726,16 +726,7 @@
           "refId": "D"
         }
       ],
-      "thresholds": [
-        {
-          "colorMode": "warning",
-          "fill": true,
-          "line": true,
-          "op": "gt",
-          "value": 5,
-          "yaxis": "left"
-        }
-      ],
+      "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
@@ -827,7 +818,7 @@
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 5,
+          "value": 10,
           "yaxis": "left"
         }
       ],
@@ -2177,5 +2168,5 @@
   "timezone": "",
   "title": "Write throughput benchmark",
   "uid": "U9mSwKsDz",
-  "version": 4
+  "version": 3
 }
