@@ -1,5 +1,7 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+featureGates:
+  "WatchCacheStallResume": true
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -8,7 +10,7 @@ nodes:
     etcd:
       local:
         extraArgs:
-          quota-backend-bytes: "20000000000" # 20GB
+          quota-backend-bytes: "200000000000" # 200GB
           listen-metrics-urls: "http://0.0.0.0:2382"
     apiServer:
       extraArgs:

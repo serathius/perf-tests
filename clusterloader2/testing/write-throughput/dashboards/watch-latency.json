@@ -606,10 +606,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(apiserver_terminated_watchers_total[1m])",
+          "expr": "rate(apiserver_terminated_watchers_total{resource=\"pods\"}[1m])",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{pods}} {{reason}}",
+          "legendFormat": "{{resource}} {{reason}}",
           "refId": "A"
         }
       ],
@@ -2168,5 +2168,5 @@
   "timezone": "",
   "title": "Write throughput benchmark",
   "uid": "U9mSwKsDz",
-  "version": 3
+  "version": 2
 }
