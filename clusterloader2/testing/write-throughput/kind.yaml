@@ -15,6 +15,7 @@ nodes:
     apiServer:
       extraArgs:
         max-requests-inflight: "640"
+        contention-profiling: "true"
         max-mutating-requests-inflight: "0"
         v: "4"
     controllerManager:
