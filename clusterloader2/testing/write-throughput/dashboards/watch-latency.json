@@ -342,14 +342,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (resource, verb, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\"}[1m]))",
+          "expr": "sum by (resource, verb, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\", subresource=\"\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}} {{verb}} {{code}} ",
           "refId": "A"
         },
         {
-          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb, subresource) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\"}[1m]))",
+          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\", subresource!=\"\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb, subresource) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource!=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}/{{subresource}} {{verb}} {{code}}",
