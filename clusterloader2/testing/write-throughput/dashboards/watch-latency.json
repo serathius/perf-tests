@@ -656,6 +656,178 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 17
+      },
+      "id": 42,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(apiserver_storage_update_attempts_sum{resource=\"pods\"}[1m])) by (storage, reource)\n/\nsum(rate(apiserver_storage_update_attempts_count{resource=\"pods\"}[1m])) by (storage, reource)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{storage}} {{resource}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Write amplification",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 17
+      },
+      "id": 43,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (storage, resource) (rate(apiserver_storage_update_conflicts_total{resource=\"pods\"}[1m]))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{storage}} {{resouce}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Conflict rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -681,7 +853,7 @@
         "x": 0,
         "y": 26
       },
-      "id": 34,
+      "id": 24,
       "legend": {
         "avg": false,
         "current": false,
@@ -702,36 +874,22 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": false,
+      "stack": true,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "etcd_debugging_mvcc_current_revision",
+          "expr": "histogram_quantile(0.99, sum(rate(apiserver_watch_events_dispatch_duration_seconds_bucket{resource=\"pods\",stage!=\"total\"}[1m])) by (resource, stage, le))",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "etcd",
-          "refId": "B"
-        },
-        {
-          "expr": "apiserver_watch_cache_resource_version{resource=\"pods\"}",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "watch cache",
-          "refId": "C"
-        },
-        {
-          "expr": "max(informer_store_resource_version{resource=\"pods\"}) by(name)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{name}}",
-          "refId": "D"
+          "legendFormat": "{{resource}} {{stage}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Resource Version",
+      "title": "API server watch event dispatch P99 time",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -747,11 +905,11 @@
       },
       "yaxes": [
         {
-          "format": "none",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -876,7 +1034,7 @@
         "x": 16,
         "y": 26
       },
-      "id": 3,
+      "id": 41,
       "legend": {
         "avg": false,
         "current": false,
@@ -901,10 +1059,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (resource, name) (informer_store_resource_version{resource=\"pods\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0))",
+          "expr": "histogram_quantile(0.99, rate(apiserver_watch_cache_read_wait_seconds_bucket{resource=\"pods\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{name}} {{resource}}",
+          "legendFormat": "{{resource}}",
           "refId": "A"
         }
       ],
@@ -914,14 +1072,14 @@
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 60,
+          "value": 10,
           "yaxis": "left"
         }
       ],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Informer delay",
+      "title": "Watch cache read wait P99",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -971,7 +1129,7 @@
         "x": 0,
         "y": 34
       },
-      "id": 24,
+      "id": 33,
       "legend": {
         "avg": false,
         "current": false,
@@ -992,14 +1150,14 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum(rate(apiserver_watch_events_dispatch_duration_seconds_bucket{resource=\"pods\",stage!=\"total\"}[1m])) by (resource, stage, le))",
+          "expr": "informer_queued_items{resource=\"pods\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{resource}} {{stage}}",
+          "legendFormat": "{{resource}} {{endpoint}}",
           "refId": "A"
         }
       ],
@@ -1007,7 +1165,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API server watch event dispatch P99 time",
+      "title": "Informer queued Items",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1023,7 +1181,7 @@
       },
       "yaxes": [
         {
-          "format": "s",
+          "format": "none",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1143,7 +1301,7 @@
         "x": 16,
         "y": 34
       },
-      "id": 33,
+      "id": 3,
       "legend": {
         "avg": false,
         "current": false,
@@ -1168,18 +1326,27 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "informer_queued_items{resource=\"pods\"}",
+          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (resource, name) (informer_store_resource_version{resource=\"pods\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0))",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{resource}} {{endpoint}}",
+          "legendFormat": "{{name}} {{resource}}",
           "refId": "A"
         }
       ],
-      "thresholds": [],
+      "thresholds": [
+        {
+          "colorMode": "warning",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 60,
+          "yaxis": "left"
+        }
+      ],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Informer queued Items",
+      "title": "Informer delay",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1195,7 +1362,7 @@
       },
       "yaxes": [
         {
-          "format": "none",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -2513,5 +2680,5 @@
   "timezone": "",
   "title": "Write throughput benchmark",
   "uid": "U9mSwKsDz",
-  "version": 6
+  "version": 1
 }
