@@ -3,10 +3,7 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "-- Grafana --",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -17,27 +14,38 @@
   },
   "editable": true,
   "gnetId": null,
-  "graphTooltip": 1,
-  "id": null,
+  "graphTooltip": 0,
+  "id": 5,
   "links": [],
   "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 23,
+      "panels": [],
+      "title": "Benchmark",
+      "type": "row"
+    },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 9,
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -62,26 +70,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (resource,  subresource, verb, scope) (rate(apiserver_request_duration_seconds_count{resource=~\"$resource\",verb=\"PATCH\", subresource=\"\", run=~\"^$run\"}[1m]))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{resource}} {{verb}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        },
-        {
-          "expr": "sum by (resource,  subresource, verb, scope) (rate(apiserver_request_duration_seconds_count{resource=~\"$resource\",verb=\"PATCH\", subresource!=\"\", run=~\"^$run\"}[1m]))",
+          "expr": "sum by (resource,  subresource, verb, scope) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource!=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}/{{subresource}} {{verb}}",
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "C"
+        },
+        {
+          "expr": "sum by (resource,  subresource, verb, scope) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource=\"\"}[1m]))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{verb}}",
+          "refId": "D"
         }
       ],
       "thresholds": [],
@@ -130,16 +130,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 0
+        "y": 1
       },
       "id": 5,
       "legend": {
@@ -166,15 +163,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (resource)(apiserver_longrunning_requests{verb=\"WATCH\", resource=~\"$resource\", run=~\"^$run\"})",
+          "expr": "sum by (resource)(apiserver_longrunning_requests{verb=\"WATCH\", resource=\"pods\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -223,18 +216,15 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 0
+        "y": 1
       },
-      "id": 2,
+      "id": 43,
       "legend": {
         "avg": false,
         "current": false,
@@ -259,31 +249,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision{run=~\"^$run\"})) - max by (resource) (apiserver_watch_cache_resource_version{resource=~\"$resource\", run=~\"^$run\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision{run=~\"^$run\"}[15s])) > 0))",
+          "expr": "sum by (storage, resource) (rate(apiserver_storage_update_conflicts_total{resource=\"pods\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "legendFormat": "{{storage}} {{resouce}}",
+          "refId": "A"
         }
       ],
-      "thresholds": [
-        {
-          "colorMode": "warning",
-          "fill": true,
-          "line": true,
-          "op": "gt",
-          "value": 5,
-          "yaxis": "left"
-        }
-      ],
+      "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API server watch cache delay",
+      "title": "Conflict rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -299,7 +276,7 @@
       },
       "yaxes": [
         {
-          "format": "s",
+          "format": "ops",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -325,16 +302,279 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 8
+        "y": 9
+      },
+      "id": 44,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code=~\"2..\", subresource!=\"\"}[1m]))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}}/{{subresource}} {{verb}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code=~\"2..\", subresource=\"\"}[1m]))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{verb}}",
+          "refId": "D"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Successfully handled reqeusts",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "id": 35,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(apiserver_terminated_watchers_total{resource=\"pods\"}[1m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{reason}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Watch termination rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "id": 42,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(apiserver_storage_update_attempts_sum{resource=\"pods\"}[1m])) by (storage, reource)\n/\nsum(rate(apiserver_storage_update_attempts_count{resource=\"pods\"}[1m])) by (storage, reource)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{storage}} {{resource}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Write amplification",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 17
       },
       "id": 11,
       "legend": {
@@ -361,26 +601,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (resource, verb, code) (rate(apiserver_request_total{resource=~\"$resource\", verb=\"PATCH\", code!~\"2..\", run=~\"^$run\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb) (rate(apiserver_request_total{resource=~\"$resource\", verb=\"PATCH\", run=~\"^$run\"}[1m]))",
+          "expr": "sum by (resource, verb, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\", subresource=\"\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}} {{verb}} {{code}} ",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         },
         {
-          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=~\"$resource\", verb=\"PATCH\", code!~\"2..\", run=~\"^$run\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb, subresource) (rate(apiserver_request_total{resource=~\"$resource\", verb=\"PATCH\", run=~\"^$run\"}[1m]))",
+          "expr": "sum by (resource, verb, subresource, code) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", code!~\"2..\", subresource!=\"\"}[1m]))\n/ ignoring(code) group_left\nsum by (resource, verb, subresource) (rate(apiserver_request_total{resource=\"pods\", verb=\"PATCH\", subresource!=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}/{{subresource}} {{verb}} {{code}}",
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -429,16 +661,192 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 8
+        "y": 17
+      },
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(apiserver_watch_cache_events_dispatched_total{resource=\"pods\"}[1m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Watch event dispatched",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 17
+      },
+      "id": 8,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{resource=\"pods\",verb=\"PATCH\",subresource=\"\"}[1m])) by (resource,  subresource, verb, scope, le))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{verb}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{resource=\"pods\",verb=\"PATCH\",subresource!=\"\"}[1m])) by (resource,  subresource, verb, scope, le))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}}/{{subresource}} {{verb}}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "APIServer Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 25
       },
       "id": 13,
       "legend": {
@@ -465,15 +873,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (resource) (rate(apiserver_watch_events_sizes_sum{resource=~\"$resource\", run=~\"^$run\"}[1m]))",
+          "expr": "sum by (resource) (rate(apiserver_watch_events_sizes_sum{resource=\"pods\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -518,20 +922,478 @@
       }
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 31,
+      "panels": [],
+      "title": "Watch Delay",
+      "type": "row"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 34
       },
+      "id": 24,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(apiserver_watch_events_dispatch_duration_seconds_bucket{resource=\"pods\",stage!=\"total\"}[1m])) by (resource, stage, le))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{stage}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "API server watch event dispatch P99 time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 34
+      },
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (resource) (apiserver_watch_cache_resource_version{resource=\"pods\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[15s])) > 0))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "warning",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 10,
+          "yaxis": "left"
+        }
+      ],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "API server watch cache delay",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 8
+        "y": 34
+      },
+      "id": 41,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(apiserver_watch_cache_read_wait_seconds_bucket{resource=\"pods\"}[1m]))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "warning",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 10,
+          "yaxis": "left"
+        }
+      ],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Watch cache read wait P99",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 42
+      },
+      "id": 33,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "informer_queued_items{resource=\"pods\"}",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Informer queued Items",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 42
+      },
+      "id": 32,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(informer_processing_latency_seconds_bucket{resource=\"pods\"}[1m])) by (resource, endpoint, le))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{resource}} {{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Informer processing delay",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 42
       },
       "id": 3,
       "legend": {
@@ -558,15 +1420,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision{run=~\"^$run\"})) - max by (resource, name) (informer_store_resource_version{resource=~\"$resource\", run=~\"^$run\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision{run=~\"^$run\"}[30s])) > 0))",
+          "expr": "((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (resource, name) (informer_store_resource_version{resource=\"pods\"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{name}} {{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [
@@ -620,22 +1478,32 @@
       }
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 27,
+      "panels": [],
+      "title": "Go runtime",
+      "type": "row"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 16
+        "y": 51
       },
-      "id": 8,
+      "id": 25,
       "legend": {
         "avg": false,
         "current": false,
@@ -660,33 +1528,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{resource=~\"$resource\",verb=\"PATCH\",subresource=\"\", run=~\"^$run\"}[1m])) by (resource,  subresource, verb, scope, le))",
+          "expr": "histogram_quantile(0.99, sum(rate(go_sched_latencies_seconds_bucket{endpoint!=\"http\"}[1m])) by (endpoint, le))",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{resource}} {{verb}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        },
-        {
-          "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{resource=~\"$resource\",verb=\"PATCH\",subresource!=\"\", run=~\"^$run\"}[1m])) by (resource,  subresource, verb, scope, le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{resource}}/{{subresource}} {{verb}}",
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "APIServer Latency",
+      "title": "Go scheduler latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -728,18 +1581,15 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 16
+        "y": 51
       },
-      "id": 12,
+      "id": 28,
       "legend": {
         "avg": false,
         "current": false,
@@ -764,22 +1614,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(apiserver_watch_cache_events_dispatched_total{resource=~\"$resource\", run=~\"^$run\"}[1m])",
+          "expr": "sum(go_sched_goroutines_runnable_goroutines) by (endpoint)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Watch event dispatched",
+      "title": "Runnable Goroutines",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -795,7 +1641,7 @@
       },
       "yaxes": [
         {
-          "format": "ops",
+          "format": "none",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -821,16 +1667,370 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 16
+        "y": 51
+      },
+      "id": 29,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(go_sync_mutex_wait_total_seconds_total{endpoint!=\"http\"}[1m])) by (endpoint)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Mutex wait time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 59
+      },
+      "id": 38,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(go_cpu_classes_gc_total_cpu_seconds_total[1m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "GC total duration time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 59
+      },
+      "id": 39,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(go_cpu_classes_gc_mark_assist_cpu_seconds_total[1m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "GC mark assist duration",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 59
+      },
+      "id": 40,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(go_cpu_classes_user_cpu_seconds_total[1m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "User CPU seconds",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 67
+      },
+      "id": 21,
+      "panels": [],
+      "title": "Resource usage",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 68
       },
       "id": 10,
       "legend": {
@@ -857,15 +2057,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max by (pod) (rate(container_cpu_usage_seconds_total{exported_namespace=\"kube-system\",container!=\"\", run=~\"^$run\"}[1m]))",
+          "expr": "max by (pod) (rate(container_cpu_usage_seconds_total{exported_namespace=\"kube-system\",container!=\"\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{pod}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -910,12 +2106,98 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 68
+      },
+      "id": 19,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "max by (pod) (container_memory_working_set_bytes{exported_namespace=\"kube-system\",container!=\"\"})",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{pod}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Memory Usage",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 76
       },
       "id": 16,
       "panels": [],
@@ -927,16 +2209,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 25
+        "y": 77
       },
       "id": 6,
       "legend": {
@@ -963,15 +2242,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum by (resource, operation, le) (rate(etcd_request_duration_seconds_bucket{resource=~\"$resource\", run=~\"^$run\"}[1m])))",
+          "expr": "histogram_quantile(0.99, sum by (resource, operation, le) (rate(etcd_request_duration_seconds_bucket{resource=\"pods\"}[1m])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "p99 {{resource}} {{operation}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -1020,16 +2295,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 25
+        "y": 77
       },
       "id": 17,
       "legend": {
@@ -1056,22 +2328,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max by (resource) (apiserver_resource_size_estimate_bytes{resource=~\"$resource\", run=~\"^$run\"})",
+          "expr": "max by (resource) (apiserver_resource_objects{resource=\"pods\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Resource Size",
+      "title": "Object count",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1087,7 +2355,7 @@
       },
       "yaxes": [
         {
-          "format": "decbytes",
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1113,16 +2381,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 25
+        "y": 77
       },
       "id": 14,
       "legend": {
@@ -1149,37 +2414,25 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "etcd_mvcc_db_total_size_in_bytes{run=~\"^$run\"}",
+          "expr": "etcd_mvcc_db_total_size_in_bytes",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "total",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         },
         {
-          "expr": "etcd_mvcc_db_total_size_in_use_in_bytes{run=~\"^$run\"}",
+          "expr": "etcd_mvcc_db_total_size_in_use_in_bytes",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "usage",
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "B"
         },
         {
-          "expr": "etcd_server_quota_backend_bytes{run=~\"^$run\"}",
+          "expr": "etcd_server_quota_backend_bytes\n",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "quota",
-          "refId": "C",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "C"
         }
       ],
       "thresholds": [],
@@ -1228,16 +2481,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 34
+        "y": 86
       },
       "id": 18,
       "legend": {
@@ -1264,15 +2514,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum by (type,le) (rate(etcd_server_request_duration_seconds_bucket{run=~\"^$run\"}[1m])))",
+          "expr": "histogram_quantile(0.99, sum by (type,le) (rate(etcd_server_request_duration_seconds_bucket[1m])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "p99 {{type}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -1321,16 +2567,99 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 34
+        "y": 86
+      },
+      "id": 36,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(etcd_server_request_duration_seconds_count[1m])) by(type)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Etcd server request rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 86
       },
       "id": 7,
       "legend": {
@@ -1357,15 +2686,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max by (resource) (apiserver_resource_size_estimate_bytes{resource=~\"$resource\", run=~\"^$run\"})",
+          "expr": "max by (resource) (apiserver_resource_size_estimate_bytes{resource=\"pods\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{resource}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -1410,69 +2735,16 @@
       }
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 18,
   "style": "dark",
-  "tags": [
-    "perflens",
-    "kubernetes",
-    "scale",
-    "write-throughput",
-    "watch"
-  ],
+  "tags": [],
   "templating": {
-    "list": [
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(run)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Scale Run",
-        "multi": false,
-        "name": "run",
-        "options": [],
-        "query": "label_values(run)",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "allValue": ".*",
-        "current": {
-          "selected": true,
-          "text": "pods",
-          "value": "pods"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(apiserver_request_total{run=~\"^$run$\"}, resource)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Resource",
-        "multi": false,
-        "name": "resource",
-        "options": [],
-        "query": "label_values(apiserver_request_total{run=~\"^$run$\"}, resource)",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      }
-    ]
+    "list": []
   },
   "time": {
-    "from": "2026-08-05T19:20:55.755Z",
-    "to": "2026-08-05T19:28:50.514Z"
+    "from": "now-5m",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -1499,8 +2771,8 @@
       "30d"
     ]
   },
-  "timezone": "utc",
-  "title": "Write Throughput",
-  "uid": "write-throughput",
+  "timezone": "",
+  "title": "Write throughput benchmark",
+  "uid": "U9mSwKsDz",
   "version": 1
 }
