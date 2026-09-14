@@ -2,6 +2,15 @@
 # Valid actions: "create", "delete"
 {{$action := .action}}
 {{$podCount := DefaultParam .podCount 10000}}
+{{$podSize := DefaultParam .podSize (DefaultParam .CL2_POD_SIZE "7KB")}}
+{{$podTemplate := DefaultParam .podTemplate ""}}
+{{if eq $podTemplate ""}}
+  {{if or (eq $podSize "30KB") (eq $podSize "30")}}
+    {{$podTemplate = "modules/initial-pods/pod_30KB.yaml"}}
+  {{else}}
+    {{$podTemplate = "modules/initial-pods/pod_7KB.yaml"}}
+  {{end}}
+{{end}}
 {{$replicas := 0}}
 {{if eq $action "create"}}
 {{$replicas = $podCount}}
@@ -18,4 +27,4 @@ steps:
     replicasPerNamespace: {{$replicas}}
     objectBundle:
     - basename: bench-pod
-      objectTemplatePath: modules/initial-pods/pod.yaml
+      objectTemplatePath: {{$podTemplate}}
