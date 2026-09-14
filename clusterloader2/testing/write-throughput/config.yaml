@@ -1,6 +1,6 @@
 # Write throughput with background watch benchmark
 {{$podCount := DefaultParam .CL2_PODS_BENCHMARK_POD_COUNT 10000}}
-{{$podSize := DefaultParam .CL2_POD_SIZE "7KB"}}
+{{$podSize := DefaultParam .CL2_POD_SIZE "10KB"}}
 {{$watchReplicas := DefaultParam .CL2_PODS_WATCH_REPLICAS 10}}
 {{$writeReplicas := DefaultParam .CL2_PODS_WRITE_REPLICAS 20}}
 {{$patchQps := DefaultParam .CL2_PODS_PATCH_QPS 100}}
