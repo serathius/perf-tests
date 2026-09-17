@@ -22,6 +22,7 @@ nodes:
         max-requests-inflight: "640"
         contention-profiling: "false"
         max-mutating-requests-inflight: "0"
+        etcd-compaction-interval: "90s"
         # enable-priority-and-fairness: "false"
         # max-mutating-requests-inflight: "0"
         # max-requests-inflight: "0"
