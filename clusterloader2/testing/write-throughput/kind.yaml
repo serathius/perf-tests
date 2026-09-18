@@ -17,12 +17,14 @@ nodes:
         extraArgs:
           quota-backend-bytes: "200000000000" # 200GB
           listen-metrics-urls: "http://0.0.0.0:2382"
+          auto-compaction-mode: "periodic"
+          auto-compaction-retention: "90s"
     apiServer:
       extraArgs:
         max-requests-inflight: "640"
         contention-profiling: "false"
         max-mutating-requests-inflight: "0"
-        etcd-compaction-interval: "90s"
+        etcd-compaction-interval: "0"
         # enable-priority-and-fairness: "false"
         # max-mutating-requests-inflight: "0"
         # max-requests-inflight: "0"
