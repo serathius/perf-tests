@@ -60,5 +60,5 @@ func TestPodSize(t *testing.T) {
 	err = protoSerializer.Encode(pod, &buf)
 	require.NoError(t, err)
 
-	require.Equal(t, 2068, buf.Len())
+	require.Equal(t, 8930, buf.Len())
 }
