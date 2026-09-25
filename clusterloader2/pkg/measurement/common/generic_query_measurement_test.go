@@ -25,15 +25,22 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/perf-tests/clusterloader2/pkg/measurement"
+	"k8s.io/perf-tests/clusterloader2/pkg/measurement/common/executors"
 	measurementutil "k8s.io/perf-tests/clusterloader2/pkg/measurement/util"
+	"sigs.k8s.io/yaml"
 )
 
 type fakeQueryExecutor struct {
-	samples map[string][]*model.Sample
+	samples  map[string][]*model.Sample
+	matrices map[string]model.Matrix
 }
 
 func (f fakeQueryExecutor) Query(query string, _ time.Time) ([]*model.Sample, error) {
 	return f.samples[query], nil
+}
+
+func (f fakeQueryExecutor) QueryMatrix(query string, _ time.Time) (model.Matrix, error) {
+	return f.matrices[query], nil
 }
 
 func TestGather(t *testing.T) {
@@ -41,6 +48,7 @@ func TestGather(t *testing.T) {
 		desc             string
 		params           map[string]interface{}
 		samples          map[string][]*model.Sample
+		matrices         map[string]model.Matrix
 		wantDataItems    []measurementutil.DataItem
 		wantConfigureErr string
 		wantErr          string
@@ -402,23 +410,161 @@ func TestGather(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "single query with over-time aggregations via single matrix fetch",
+			params: map[string]interface{}{
+				"metricName":    "ActiveWatchRequests",
+				"metricVersion": "v1",
+				"unit":          "watches",
+				"queries": []map[string]interface{}{
+					{
+						"query": "# dashboard comment\nsum(apiserver_longrunning_requests{verb=\"WATCH\", resource=\"pods\"})",
+						"aggregations": []interface{}{
+							"Perc99",
+							"Perc90",
+							"Perc50",
+							"Max",
+							"Min",
+							"Avg",
+							"Last",
+						},
+					},
+				},
+			},
+			matrices: map[string]model.Matrix{
+				"(sum(apiserver_longrunning_requests{verb=\"WATCH\", resource=\"pods\"}))[60s:30s]": {
+					{
+						Metric: model.Metric{},
+						Values: []model.SamplePair{
+							{Timestamp: 0, Value: 10},
+							{Timestamp: 30000, Value: 20},
+							{Timestamp: 60000, Value: 30},
+						},
+					},
+				},
+			},
+			wantDataItems: []measurementutil.DataItem{
+				{
+					Unit: "watches",
+					Data: map[string]float64{
+						"Perc99": computePrometheusQuantile(0.99, []float64{10, 20, 30}),
+						"Perc90": 28.0,
+						"Perc50": 20.0,
+						"Max":    30.0,
+						"Min":    10.0,
+						"Avg":    20.0,
+						"Last":   30.0,
+					},
+				},
+			},
+		},
+		{
+			desc: "named queries with per-query aggregations and dimensions",
+			params: map[string]interface{}{
+				"metricName":    "APIServerPatchLatency",
+				"metricVersion": "v1",
+				"unit":          "s",
+				"dimensions": []interface{}{
+					"resource",
+				},
+				"queries": []map[string]interface{}{
+					{
+						"name":  "Spec",
+						"query": "rate(apiserver_request_duration_seconds_bucket{subresource=\"\"}[1m])",
+						"aggregations": []interface{}{
+							"Perc99",
+							"Perc50",
+							"Max",
+						},
+					},
+					{
+						"name":  "Status",
+						"query": "rate(apiserver_request_duration_seconds_bucket{subresource!=\"\"}[1m])",
+						"aggregations": []interface{}{
+							"Perc99",
+							"Perc50",
+							"Max",
+						},
+					},
+				},
+			},
+			matrices: map[string]model.Matrix{
+				"(rate(apiserver_request_duration_seconds_bucket{subresource=\"\"}[1m]))[60s:30s]": {
+					{
+						Metric: model.Metric{model.LabelName("resource"): model.LabelValue("pods")},
+						Values: []model.SamplePair{
+							{Timestamp: 0, Value: 1.0},
+							{Timestamp: 30000, Value: 3.0},
+						},
+					},
+				},
+				"(rate(apiserver_request_duration_seconds_bucket{subresource!=\"\"}[1m]))[60s:30s]": {
+					{
+						Metric: model.Metric{model.LabelName("resource"): model.LabelValue("pods")},
+						Values: []model.SamplePair{
+							{Timestamp: 0, Value: 2.0},
+							{Timestamp: 30000, Value: 4.0},
+						},
+					},
+				},
+			},
+			wantDataItems: []measurementutil.DataItem{
+				{
+					Labels: map[string]string{
+						"resource": "pods",
+					},
+					Unit: "s",
+					Data: map[string]float64{
+						"Spec_Perc99":   computePrometheusQuantile(0.99, []float64{1, 3}),
+						"Spec_Perc50":   2.0,
+						"Spec_Max":      3.0,
+						"Status_Perc99": computePrometheusQuantile(0.99, []float64{2, 4}),
+						"Status_Perc50": 3.0,
+						"Status_Max":    4.0,
+					},
+				},
+			},
+		},
+		{
+			desc: "invalid aggregation name fails configuration",
+			params: map[string]interface{}{
+				"metricName":    "InvalidAgg",
+				"metricVersion": "v1",
+				"unit":          "s",
+				"queries": []map[string]interface{}{
+					{
+						"query": "sum(my_metric)",
+						"aggregations": []interface{}{
+							"Perc105",
+						},
+					},
+				},
+			},
+			wantConfigureErr: "invalid percentile aggregation",
+		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := &testCases[i]
 		t.Run(tc.desc, func(t *testing.T) {
 			gatherer := &genericQueryGatherer{}
 			err := gatherer.Configure(&measurement.Config{Params: tc.params})
 			if tc.wantConfigureErr != "" {
+				require.Error(t, err)
 				assert.Contains(t, err.Error(), tc.wantConfigureErr)
 				return
 			}
 			assert.Nil(t, err)
 			startTime := time.Now()
 			endTime := startTime.Add(1 * time.Minute)
-			executor := fakeQueryExecutor{tc.samples}
+			executor := fakeQueryExecutor{
+				samples:  tc.samples,
+				matrices: tc.matrices,
+			}
 
 			summaries, err := gatherer.Gather(executor, startTime, endTime, nil)
 			if tc.wantErr != "" {
+				require.Error(t, err)
 				assert.Contains(t, err.Error(), tc.wantErr)
 			} else {
 				assert.Nil(t, err)
@@ -429,6 +575,118 @@ func TestGather(t *testing.T) {
 			err = json.Unmarshal([]byte(content), &perfData)
 			require.Nil(t, err)
 			assert.ElementsMatch(t, perfData.DataItems, tc.wantDataItems)
+		})
+	}
+}
+
+func TestGatherPromqlEquivalence(t *testing.T) {
+	executor, err := executors.NewPromqlExecutor("testdata/generic_query_measurement/informer_cache_lag.yaml")
+	require.NoError(t, err)
+	defer executor.Close()
+
+	start := time.Unix(31, 0).UTC()
+	end := time.Unix(162, 0).UTC()
+
+	aggregatedMeasurementYAML := `
+Identifier: InformerCacheLagPrometheus
+Method: GenericPrometheusQuery
+Params:
+  metricName: InformerCacheLagPrometheus
+  metricVersion: v1
+  unit: s
+  dimensions:
+  - name
+  queries:
+  - query: ((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (name) (informer_store_resource_version{resource="pods"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0))
+    aggregations:
+    - Perc99
+    - Perc90
+    - Perc50
+`
+
+	legacyMeasurementYAML := `
+Identifier: InformerCacheLagPrometheus
+Method: GenericPrometheusQuery
+Params:
+  metricName: InformerCacheLagPrometheus
+  metricVersion: v1
+  unit: s
+  dimensions:
+  - name
+  queries:
+  - name: Perc99
+    query: quantile_over_time(0.99, (((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (name) (informer_store_resource_version{resource="pods"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0)))[%v:30s])
+  - name: Perc90
+    query: quantile_over_time(0.90, (((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (name) (informer_store_resource_version{resource="pods"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0)))[%v:30s])
+  - name: Perc50
+    query: quantile_over_time(0.50, (((scalar(max(etcd_debugging_mvcc_current_revision)) - max by (name) (informer_store_resource_version{resource="pods"})) / scalar(max(deriv(etcd_debugging_mvcc_current_revision[30s])) > 0)))[%v:30s])
+`
+
+	wantJSON := `{
+  "version": "v1",
+  "dataItems": [
+    {
+      "data": {
+        "Perc50": 1.5806361115725167,
+        "Perc90": 4.753878227908327,
+        "Perc99": 5.939070750141988
+      },
+      "unit": "s",
+      "labels": {
+        "name": "kube-apiserver"
+      }
+    },
+    {
+      "data": {
+        "Perc50": 0.7331293732050739,
+        "Perc90": 3.084785048170125,
+        "Perc99": 3.960162983851825
+      },
+      "unit": "s",
+      "labels": {
+        "name": "kube-controller-manager"
+      }
+    },
+    {
+      "data": {
+        "Perc50": 1.4117468419640744,
+        "Perc90": 4.354870017180952,
+        "Perc99": 5.456168610635375
+      },
+      "unit": "s",
+      "labels": {
+        "name": "kube-scheduler"
+      }
+    }
+  ]
+}`
+
+	for _, tc := range []struct {
+		name            string
+		measurementYAML string
+	}{
+		{name: "new_aggregations_config", measurementYAML: aggregatedMeasurementYAML},
+		{name: "legacy_quantile_over_time_config", measurementYAML: legacyMeasurementYAML},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var parsed struct {
+				Params map[string]interface{} `yaml:"Params"`
+			}
+			require.NoError(t, yaml.Unmarshal([]byte(tc.measurementYAML), &parsed))
+
+			gatherer := &genericQueryGatherer{}
+			require.NoError(t, gatherer.Configure(&measurement.Config{Params: parsed.Params}))
+
+			summaries, err := gatherer.Gather(executor, start, end, nil)
+			require.NoError(t, err)
+			require.Len(t, summaries, 1)
+
+			var gotPerfData, wantPerfData measurementutil.PerfData
+			require.NoError(t, json.Unmarshal([]byte(summaries[0].SummaryContent()), &gotPerfData))
+			require.NoError(t, json.Unmarshal([]byte(wantJSON), &wantPerfData))
+
+			assert.Equal(t, wantPerfData.Version, gotPerfData.Version)
+			assert.ElementsMatch(t, wantPerfData.DataItems, gotPerfData.DataItems)
 		})
 	}
 }
