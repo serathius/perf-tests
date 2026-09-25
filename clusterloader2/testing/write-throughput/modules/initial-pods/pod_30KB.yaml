@@ -379,6 +379,10 @@ spec:
       name: app-logs
     - mountPath: /var/cache/app
       name: app-cache
+    - mountPath: /var/lib/data-0
+      name: data-pvc-0
+    - mountPath: /var/lib/data-1
+      name: data-pvc-1
     livenessProbe:
       httpGet:
         path: /health/liveness
@@ -594,6 +598,12 @@ spec:
         drop:
         - ALL
   volumes:
+  - name: data-pvc-0
+    persistentVolumeClaim:
+      claimName: {{.Name}}-pvc-0
+  - name: data-pvc-1
+    persistentVolumeClaim:
+      claimName: {{.Name}}-pvc-1
   - name: configmap
     configMap:
       name: {{.Name}}

@@ -19,6 +19,7 @@ nodes:
           listen-metrics-urls: "http://0.0.0.0:2382"
           auto-compaction-mode: "periodic"
           auto-compaction-retention: "90s"
+          unsafe-no-fsync: "true"
     apiServer:
       extraArgs:
         max-requests-inflight: "640"
